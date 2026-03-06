@@ -65,7 +65,7 @@ export default function SplashScreen({ onComplete }) {
     }, [onComplete]);
 
     return (
-        <div id="splash-screen" ref={containerRef} style={{ background: '#020202', color: '#fff', zIndex: 99999 }}>
+        <div id="splash-screen" ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#020202', color: '#fff', zIndex: 99999 }}>
             <div ref={blurRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', filter: 'blur(20px)', scale: 1.2, opacity: 0 }}>
                 <div className="splash-text" ref={textRef} style={{
                     fontSize: 'clamp(2.5rem, 6vw, 5rem)', letterSpacing: '8px',
