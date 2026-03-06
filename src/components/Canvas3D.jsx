@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Stars, Sparkles, Environment, MeshTransmissionMaterial, ContactShadows, Points, PointMaterial } from '@react-three/drei';
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
 // Create abstract flying particles
@@ -36,7 +36,33 @@ function SceneObjects() {
     const orbRef1 = useRef();
     const orbRef2 = useRef();
 
+    const mouse = useRef({ x: 0, y: 0 });
+    const target = useRef({ x: 0, y: 0 });
+
     const { viewport } = useThree();
+
+    useEffect(() => {
+        const handleMove = (e) => {
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            if (clientX !== undefined && clientY !== undefined) {
+                mouse.current.x = (clientX / window.innerWidth) * 2 - 1;
+                mouse.current.y = -(clientY / window.innerHeight) * 2 + 1;
+            }
+        };
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: true });
+
+        return () => {
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('touchmove', handleMove);
+        };
+    }, []);
 
     useFrame((state, delta) => {
         const scrollY = window.scrollY;
@@ -44,31 +70,45 @@ function SceneObjects() {
         const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
         const scrollProgress = scrollY / maxScroll;
 
+        // Smoothly interpolate target values for fluid motion
+        target.current.x = THREE.MathUtils.lerp(target.current.x, mouse.current.x, 0.05);
+        target.current.y = THREE.MathUtils.lerp(target.current.y, mouse.current.y, 0.05);
+
+        // Apply global scene rotation based on cursor
+        if (group.current) {
+            group.current.rotation.y = target.current.x * 0.3;
+            group.current.rotation.x = -target.current.y * 0.3;
+        }
+
         // The main crystal rotates and moves through the scene
         if (mainObject.current) {
             mainObject.current.rotation.y += delta * 0.4;
             mainObject.current.rotation.z += delta * 0.2;
 
             // Shift it right for the hero section, then move center as we scroll down
-            const xOffset = THREE.MathUtils.lerp(3, 0, scrollProgress * 3);
-            mainObject.current.position.x = xOffset;
+            // On mobile, maybe don't shift as much, but we let CSS handle overlay, here we just use fixed offset
+            const isMobile = window.innerWidth < 768;
+            const startX = isMobile ? 0 : 3;
+            const xOffset = THREE.MathUtils.lerp(startX, 0, scrollProgress * 3);
+
+            mainObject.current.position.x = xOffset + (target.current.x * 0.5);
 
             // Move down a bit, but also let the camera fly past
-            mainObject.current.position.y = THREE.MathUtils.lerp(0, -5, scrollProgress);
+            mainObject.current.position.y = THREE.MathUtils.lerp(0, -5, scrollProgress) + (target.current.y * 0.5);
             // Scale it up as we scroll
             mainObject.current.scale.setScalar(THREE.MathUtils.lerp(1, 1.8, scrollProgress));
         }
 
-        // Dynamic floating orbs passing by
+        // Dynamic floating orbs passing by reacting to touch too
         if (orbRef1.current) {
             orbRef1.current.position.y += Math.sin(state.clock.elapsedTime) * 0.01;
-            orbRef1.current.position.x = -4 + scrollProgress * 10;
+            orbRef1.current.position.x = -4 + scrollProgress * 10 - (target.current.x * 0.5);
             orbRef1.current.position.z = Math.cos(state.clock.elapsedTime * 0.5) * 2;
         }
 
         if (orbRef2.current) {
             orbRef2.current.position.y -= Math.cos(state.clock.elapsedTime * 1.5) * 0.01;
-            orbRef2.current.position.x = 4 - scrollProgress * 15;
+            orbRef2.current.position.x = 4 - scrollProgress * 15 + (target.current.x * 0.5);
             orbRef2.current.position.z = Math.sin(state.clock.elapsedTime * 0.8) * -3;
         }
 
