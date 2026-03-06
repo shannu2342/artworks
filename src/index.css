@@ -107,6 +107,7 @@ a {
 .app-container {
   position: relative;
   width: 100%;
+  overflow-x: hidden;
 }
 
 #canvas-container {

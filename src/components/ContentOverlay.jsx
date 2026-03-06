@@ -195,7 +195,7 @@ export default function ContentOverlay() {
             <section className="section" id="register">
                 <div className="left-huge">JOIN US</div>
                 <div className="container flex-end">
-                    <div className="glass-panel" style={{ width: '600px' }}>
+                    <div className="glass-panel" style={{ maxWidth: '600px', width: '100%' }}>
                         <h2 className="panel-title">Ignite <span className="text-gradient">Your Path</span></h2>
                         <form className="mt-6" onSubmit={(e) => e.preventDefault()}>
                             <div className="form-group">
