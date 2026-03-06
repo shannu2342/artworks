@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 // Create abstract flying particles
 function ParticleField() {
-    const count = 1000;
+    const count = 400;
     const positions = useMemo(() => {
         const arr = new Float32Array(count * 3);
         for (let i = 0; i < count * 3; i++) {
@@ -128,9 +128,9 @@ function SceneObjects() {
             <directionalLight position={[-10, -20, -10]} intensity={3} color="#00ffff" />
             <pointLight position={[0, 0, -5]} intensity={5} color="#8a2be2" distance={20} />
 
-            <Stars radius={150} depth={50} count={10000} factor={6} saturation={1} fade speed={3} />
+            <Stars radius={150} depth={50} count={3000} factor={6} saturation={1} fade speed={3} />
             <ParticleField />
-            <Sparkles count={500} size={5} color="#00ffff" opacity={0.6} speed={0.8} scale={20} />
+            <Sparkles count={150} size={5} color="#00ffff" opacity={0.6} speed={0.8} scale={20} />
 
             {/* Main Glass Crystal */}
             <Float speed={3} rotationIntensity={2} floatIntensity={4}>
@@ -148,6 +148,8 @@ function SceneObjects() {
                         color="#ffffff"
                         clearcoat={1}
                         clearcoatRoughness={0.1}
+                        resolution={256}
+                        samples={4}
                     />
                 </mesh>
             </Float>
@@ -167,7 +169,7 @@ function SceneObjects() {
                 </mesh>
             </Float>
 
-            <Environment preset="night" />
+            <Environment preset="night" resolution={256} />
         </group>
     );
 }
@@ -176,8 +178,9 @@ export default function Canvas3D() {
     return (
         <div id="canvas-container">
             <Canvas
+                dpr={[1, 1.5]}
                 camera={{ position: [0, 0, 7], fov: 75 }}
-                gl={{ antialias: true, alpha: false }}
+                gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
             >
                 <SceneObjects />
             </Canvas>
